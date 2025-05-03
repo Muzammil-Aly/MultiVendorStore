@@ -42,6 +42,12 @@ const userSchema = new Schema(
     refreshToken: {
       type: String,
     },
+    role: {
+      type: String,
+      enum: ["buyer", "seller"],
+      default: "buyer", // Default is buyer
+    },
+
     carts: [
       {
         product: {
@@ -139,9 +145,30 @@ userSchema.methods.generateRefreshToken = function () {
 //   );
 // };
 
-userSchema.methods.addToCart = async function (cart) {
+userSchema.methods.addToCart = async function ({
+  product,
+  quantity = 1,
+  color,
+  price,
+}) {
   try {
-    this.carts = [this.cart, ...cart];
+    // Check if the product already exists in cart (optional: prevent duplicates or increment quantity)
+    const existingItem = this.carts.find(
+      (item) =>
+        item.product.toString() === product.toString() && item.color === color
+    );
+
+    if (existingItem) {
+      existingItem.quantity += quantity;
+    } else {
+      this.carts.push({
+        product,
+        quantity,
+        color,
+        price,
+      });
+    }
+
     await this.save();
     return this.carts;
   } catch (error) {

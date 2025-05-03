@@ -311,6 +311,34 @@ const deleteUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User deleted successfully"));
 });
 
+const allUsers = asyncHandler(async (req, res) => {
+  const getUsers = await User.find().select("-password -refreshToken -carts ");
+  return res
+    .status(200)
+    .json(new ApiResponse(200, getUsers, "All users fetched successfully"));
+});
+
+const updateRole = asyncHandler(async (req, res) => {
+  const { role } = req.body; // Expected role: 'buyer' or 'seller'
+
+  if (!role || (role !== "buyer" && role !== "seller")) {
+    return res.status(400).json({ message: "Invalid role specified" });
+  }
+
+  const user = await User.findById(req.user._id);
+
+  // Check if the user is allowed to switch roles (you can implement any further checks here)
+  if (user.role.includes(role)) {
+    return res.status(400).json({ message: `You are already a ${role}` });
+  }
+
+  // Update the user's role
+  user.role = role; // Switch the role (either "buyer" or "seller")
+  await user.save();
+
+  return res.status(200).json(new ApiResponse(200, role, "Role is updated"));
+});
+
 export {
   registerUser,
   loginUser,
@@ -322,4 +350,6 @@ export {
   refreshAccessToken,
   getCurrentUser,
   deleteUser,
+  allUsers,
+  updateRole,
 };

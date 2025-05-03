@@ -10,6 +10,8 @@ import {
   updateUserAvatar,
   updateUserName,
   deleteUser,
+  allUsers,
+  updateRole,
 } from "../controllers/user.controller.js";
 
 import { verifyJwt } from "../middlewares/auth.middleware.js";
@@ -27,6 +29,7 @@ router.route("/login").post(loginUser);
 // secure routes
 router.route("/logout").post(verifyJwt, logoutUser);
 router.route("/delete").delete(verifyJwt, deleteUser);
+router.route("/allVendors").get(verifyJwt, allUsers);
 
 router.route("/refresh-token").post(refreshAccessToken);
 router.route("/change-password").post(verifyJwt, changeCurrentPassword);
@@ -36,4 +39,7 @@ router.route("/update-username").patch(verifyJwt, updateUserName);
 router
   .route("/avatar")
   .patch(verifyJwt, upload.single("avatar"), updateUserAvatar);
+
+router.route("/updateRole").post(verifyJwt, updateRole);
+
 export default router;

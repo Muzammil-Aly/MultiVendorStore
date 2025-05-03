@@ -1,35 +1,53 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+
+import { ToastContainer } from "react-toastify";
+import { getCurrentUser } from "./components/ContextProvider/authService";
+import "./App.css";
+import { useAuth } from "./components/ContextProvider/Contextprovider";
+
+import { Outlet } from "react-router-dom";
+import { Footer, Header } from "../src/components/index";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [loading, setLoading] = useState(true);
+  const { login, logout } = useAuth();
+  useEffect(() => {
+    // Simulate loading time
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 1000); // 1 second
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    return () => clearTimeout(timeout);
+  }, []);
+
+  useEffect(() => {
+    getCurrentUser()
+      .then((userData) => {
+        if (userData) {
+          login({ userData });
+        } else {
+          logout();
+        }
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  return !loading ? (
+    <div className="min-h-screen flex flex-wrap content-between bg-[#4682B4]">
+      <div className="w-full block">
+        <Header />
+        <main className="min-h-[70vh]">
+          <Outlet />
+        </main>
+        <Footer />
+        <ToastContainer position="top-right" autoClose={3000} />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  ) : (
+    <div className="min-h-screen flex justify-center items-center bg-gray-400">
+      <p className="text-white text-xl">Loading...</p>
+    </div>
+  );
 }
 
-export default App
+export default App;
